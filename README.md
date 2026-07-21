@@ -1,1 +1,9 @@
-# hate-speech-recognition
+The Hate Speech Detection using Machine Learning project is a Natural Language Processing (NLP) application developed to automatically identify and classify textual content as Hate Speech, Offensive Language, or Normal Speech. The project demonstrates how machine learning techniques can be applied to analyze user-generated text and detect harmful or abusive content on online platforms.
+
+The system begins by loading a labeled text dataset and preprocessing the data through several NLP techniques, including converting text to lowercase, removing URLs, punctuation, numbers, and stopwords, and performing lemmatization to normalize words. The cleaned text is then transformed into numerical features using TF-IDF (Term Frequency–Inverse Document Frequency), enabling the machine learning model to understand the importance of words within the dataset.
+
+A Logistic Regression classifier is trained on the processed data to learn patterns associated with different categories of text. The trained model is evaluated using metrics such as Accuracy, Precision, Recall, F1-Score, and a Confusion Matrix to measure its classification performance. Additionally, a Word Cloud is generated to visualize the most frequently occurring words in the dataset.
+
+The application also provides a custom prediction feature that allows users to input any text and receive an instant prediction of its category. This demonstrates the practical application of machine learning in content moderation and online safety.
+
+Overall, this project showcases an end-to-end machine learning pipeline involving data preprocessing, feature extraction, model training, evaluation, visualization, and real-time prediction. It serves as a strong example of applying NLP and machine learning techniques to solve real-world problems related to online content moderation and cyberbullying prevention.
