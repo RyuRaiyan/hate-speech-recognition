@@ -1,11 +1,9 @@
 import pandas as pd
-import numpy as np
 import re
 import string
 import nltk
-import joblib
 import matplotlib.pyplot as plt
-import seaborn as sns
+from wordcloud import WordCloud
 
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -13,64 +11,40 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
-    ConfusionMatrixDisplay
+    ConfusionMatrixDisplay,
 )
 
-from wordcloud import WordCloud
 
-
-nltk.download('stopwords')
-nltk.download('wordnet')
+nltk.download("stopwords")
+nltk.download("wordnet")
 
 
 df = pd.read_csv("dataset/hate_speech.csv")
-
-print(df.head())
-
-
-
 df = df.dropna()
-
 
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
-
 def clean_text(text):
-
-    text = text.lower()
-
-    text = re.sub(r"http\S+", "", text)
-
-    text = re.sub(r"@\w+", "", text)
-
+    text = str(text).lower()
+    text = re.sub(r"http\\S+", "", text)
+    text = re.sub(r"@\\w+", "", text)
     text = re.sub(r"#", "", text)
-
-    text = re.sub(r"\d+", "", text)
-
+    text = re.sub(r"\\d+", "", text)
     text = text.translate(str.maketrans("", "", string.punctuation))
-
     words = text.split()
-
     words = [
         lemmatizer.lemmatize(word)
         for word in words
         if word not in stop_words
     ]
-
     return " ".join(words)
 
-
 df["clean_text"] = df["text"].apply(clean_text)
-
-print(df[["text", "clean_text"]].head())
-
-
 
 text = " ".join(df["clean_text"])
 
@@ -83,20 +57,14 @@ wordcloud = WordCloud(
 plt.figure(figsize=(12,6))
 plt.imshow(wordcloud)
 plt.axis("off")
-plt.title("Most Frequent Words")
+plt.title("Word Cloud")
 plt.show()
 
 
-
 vectorizer = TfidfVectorizer(max_features=5000)
-
 X = vectorizer.fit_transform(df["clean_text"])
-
 y = df["label"]
 
-# ------------------------------------
-# Train Test Split
-# ------------------------------------
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -107,25 +75,14 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 model = LogisticRegression(max_iter=1000)
-
 model.fit(X_train, y_train)
-
 
 
 y_pred = model.predict(X_test)
 
-
-accuracy = accuracy_score(y_test, y_pred)
-
-print("\nAccuracy:", accuracy)
-
-
-
-print("\nClassification Report\n")
-
+print("\\nAccuracy:", accuracy_score(y_test, y_pred))
+print("\\nClassification Report\\n")
 print(classification_report(y_test, y_pred))
-
-
 
 cm = confusion_matrix(y_test, y_pred)
 
@@ -135,45 +92,33 @@ disp = ConfusionMatrixDisplay(
 )
 
 disp.plot(cmap="Blues")
-
 plt.title("Confusion Matrix")
-
 plt.show()
 
 
-
-joblib.dump(model, "saved_model.pkl")
-
-joblib.dump(vectorizer, "vectorizer.pkl")
-
-print("Model Saved")
-
-
-
 def predict(text):
-
     cleaned = clean_text(text)
-
     vector = vectorizer.transform([cleaned])
-
     prediction = model.predict(vector)[0]
 
-    probability = model.predict_proba(vector).max()
+    if hasattr(model, "predict_proba"):
+        confidence = model.predict_proba(vector).max() * 100
+        print(f"Input      : {text}")
+        print(f"Prediction : {prediction}")
+        print(f"Confidence : {confidence:.2f}%")
+    else:
+        print(f"Input      : {text}")
+        print(f"Prediction : {prediction}")
 
-    print("\nInput :", text)
 
-    print("Prediction :", prediction)
+samples = [
+    "I love everyone.",
+    "You are an idiot.",
+    "Go kill yourself.",
+    "Have a wonderful day.",
+    "You are amazing."
+]
 
-    print("Confidence :", round(probability * 100,2), "%")
-
-
-
-predict("I love everyone")
-
-predict("You are an idiot")
-
-predict("Go kill yourself")
-
-predict("Have a wonderful day")
-
-predict("You are amazing")
+for sample in samples:
+    print("-" * 50)
+    predict(sample)
